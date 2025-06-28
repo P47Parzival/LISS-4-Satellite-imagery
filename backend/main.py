@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel
+from models import UserCreate, UserLogin, AOICreate, AOIUpdate
+from database import users_collection, aois_collection
+from utils import serialize_doc
 from typing import Optional, List
 from datetime import datetime, timedelta
 import bcrypt
@@ -22,52 +23,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MongoDB connection
-MONGODB_URL = "mongodb://localhost:27017"
-DATABASE_NAME = "satellite_monitoring"
-
-client = AsyncIOMotorClient(MONGODB_URL)
-database = client[DATABASE_NAME]
-users_collection = database.users
-aois_collection = database.aois
-
 # JWT configuration
 SECRET_KEY = "your-secret-key-here-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
 security = HTTPBearer()
-
-# Pydantic models
-class UserCreate(BaseModel):
-    email: str
-    password: str
-    name: Optional[str] = None
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-class AOICreate(BaseModel):
-    name: str
-    geojson: dict
-    changeType: str
-    monitoringFrequency: str
-    confidenceThreshold: int
-    emailAlerts: bool = True
-    inAppNotifications: bool = True
-    description: Optional[str] = None
-    status: str = "active"
-
-class AOIUpdate(BaseModel):
-    name: Optional[str] = None
-    changeType: Optional[str] = None
-    monitoringFrequency: Optional[str] = None
-    confidenceThreshold: Optional[int] = None
-    emailAlerts: Optional[bool] = None
-    inAppNotifications: Optional[bool] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
 
 # Helper functions
 def create_access_token(data: dict):
@@ -97,30 +58,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail="User not found")
     
     return user
-
-def serialize_doc(doc):
-    """Convert MongoDB document to JSON serializable format"""
-    if doc is None:
-        return None
-    if isinstance(doc, list):
-        return [serialize_doc(item) for item in doc]
-    if isinstance(doc, dict):
-        result = {}
-        for key, value in doc.items():
-            if key == "_id":
-                result[key] = str(value)
-            elif isinstance(value, ObjectId):
-                result[key] = str(value)
-            elif isinstance(value, datetime):
-                result[key] = value.isoformat()
-            elif isinstance(value, dict):
-                result[key] = serialize_doc(value)
-            elif isinstance(value, list):
-                result[key] = serialize_doc(value)
-            else:
-                result[key] = value
-        return result
-    return doc
 
 # Authentication endpoints
 @app.post("/auth/signup")
