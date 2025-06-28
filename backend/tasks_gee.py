@@ -5,6 +5,7 @@ from celery_config import celery_app
 from database import aois_collection # Assuming you have aoi_collection in database.py
 from bson import ObjectId
 from utils import serialize_doc # Assuming you have a function to serialize MongoDB docs
+from database import sync_aois_collection
 
 # Initialize GEE (it's safe to do this at the module level for a worker)
 try:
@@ -24,7 +25,7 @@ def process_aoi_for_changes(aoi_id: str):
     print(f"Starting GEE processing for AOI ID: {aoi_id}")
     
     # Fetch the AOI document from MongoDB
-    aoi_document = aois_collection.find_one({"_id": ObjectId(aoi_id)})
+    aoi_document = sync_aois_collection.find_one({"_id": ObjectId(aoi_id)})
     if not aoi_document:
         print(f"Error: AOI with ID {aoi_id} not found.")
         return
@@ -55,7 +56,8 @@ def schedule_all_aoi_checks():
     
     # In a real app, you'd filter by 'monitoringFrequency'
     # For now, let's just get all of them.
-    all_aois = aois_collection.find({})
+    # all_aois = aois_collection.find({})
+    all_aois = sync_aois_collection.find({})
     
     for aoi in all_aois:
         aoi_id = str(aoi["_id"])
@@ -71,7 +73,8 @@ def schedule_all_aoi_checks():
 def get_change_for_aoi(aoi_document: dict):
     # ... [The entire 'get_change_for_aoi' function from the previous response] ...
     # ... from 'aoi_geometry = ee.Geometry(geojson_aoi)' onwards ...
-    
+    change_area_sq_meters = 0  # Replace with your actual calculation
+
     # At the end, instead of just printing, return a dictionary
     if change_area_sq_meters and change_area_sq_meters > 500:
         return {
