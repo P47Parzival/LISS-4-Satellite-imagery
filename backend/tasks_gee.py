@@ -9,6 +9,9 @@ from bson import ObjectId
 from utils import serialize_doc 
 from database import sync_aois_collection
 from database import sync_users_collection
+from database import sync_changes_collection
+from datetime import datetime
+from celery_singleton import Singleton
 
 # Initialize GEE (it's safe to do this at the module level for a worker)
 try:
@@ -19,7 +22,7 @@ except Exception:
 
 # --- The Main GEE Processing Task ---
 # The @celery_app.task decorator registers this function as a background task.
-@celery_app.task
+@celery_app.task(base=Singleton)
 def process_aoi_for_changes(aoi_id: str):
     """
     Fetches a single AOI by its ID and runs the GEE change detection logic.
@@ -50,6 +53,17 @@ def process_aoi_for_changes(aoi_id: str):
             )
         else:
             print(f"ERROR: Could not find user with ID {aoi_document['userId']} to send alert.")
+        # Save to changes collection
+        change_doc = {
+            "aoi_id": str(aoi_document["_id"]),
+            "user_id": str(aoi_document["userId"]),
+            "detection_date": datetime.utcnow(),
+            "area_of_change": results["area_sq_meters"],
+            "before_image_url": results["t1_image_url"],
+            "after_image_url": results["t2_image_url"],
+            "status": "unread"
+        }
+        sync_changes_collection.insert_one(change_doc)
 
     else:
         print(f"No significant change found for AOI: {aoi_document['name']}.")

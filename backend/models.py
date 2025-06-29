@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
 class UserCreate(BaseModel):
     email: str
@@ -30,3 +31,12 @@ class AOIUpdate(BaseModel):
     inAppNotifications: Optional[bool] = None
     description: Optional[str] = None
     status: Optional[str] = None
+
+class ChangeRecord(BaseModel):
+    aoi_id: str
+    user_id: str
+    detection_date: datetime
+    area_of_change: float
+    before_image_url: str
+    after_image_url: str
+    status: str = "unread"
