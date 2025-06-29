@@ -2,10 +2,13 @@
 
 import ee
 from celery_config import celery_app
+from notifications import send_change_alert_email
 from database import aois_collection
+from database import users_collection
 from bson import ObjectId
 from utils import serialize_doc 
 from database import sync_aois_collection
+from database import sync_users_collection
 
 # Initialize GEE (it's safe to do this at the module level for a worker)
 try:
@@ -30,15 +33,24 @@ def process_aoi_for_changes(aoi_id: str):
         print(f"Error: AOI with ID {aoi_id} not found.")
         return
 
-    # The GEE code from the previous response fits perfectly here.
-    # For clarity, it's encapsulated in its own function.
     results = get_change_for_aoi(serialize_doc(aoi_document))
     
-    # Here, 'results' would contain info like change_area, image_urls etc.
     if results and results["significant_change_detected"]:
         print(f"Significant change found for AOI: {aoi_document['name']}. Triggering alert.")
-        # TODO: Add your alerting logic here (Step 7)
-        # For example: send_email_alert(aoi_document['userId'], results)
+        
+        # --- NEW: Call the notification function ---
+        from notifications import send_change_alert_email
+        from database import users_collection
+        user = sync_users_collection.find_one({"_id": aoi_document['userId']})
+        if user:
+            send_change_alert_email(
+                user_email=user['email'], 
+                aoi_name=aoi_document['name'], 
+                change_details=results
+            )
+        else:
+            print(f"ERROR: Could not find user with ID {aoi_document['userId']} to send alert.")
+
     else:
         print(f"No significant change found for AOI: {aoi_document['name']}.")
 
@@ -105,6 +117,11 @@ def get_change_for_aoi(aoi_document: dict):
     ndvi_t1 = image_t1.normalizedDifference(['B8', 'B4']).rename('NDVI')
     ndvi_t2 = image_t2.normalizedDifference(['B8', 'B4']).rename('NDVI')
 
+    # --- Add thumbnail URL generation here ---
+    vis_params = {'bands': ['B4', 'B3', 'B2'], 'min': 0.0, 'max': 0.3}
+    t1_thumb_url = image_t1.visualize(**vis_params).getThumbURL({'dimensions': '512x512', 'format': 'jpg'})
+    t2_thumb_url = image_t2.visualize(**vis_params).getThumbURL({'dimensions': '512x512', 'format': 'jpg'})
+
     # 6. Change detection
     ndvi_delta = ndvi_t2.subtract(ndvi_t1)
     significant_change_map = ndvi_delta.lt(-0.25)  # Threshold for loss
@@ -126,7 +143,9 @@ def get_change_for_aoi(aoi_document: dict):
         print(f"SUCCESS: Significant change of {change_area_sq_meters} sq meters detected.")
         return {
             "significant_change_detected": True,
-            "area_sq_meters": change_area_sq_meters
+            "area_sq_meters": change_area_sq_meters,
+            "t1_image_url": t1_thumb_url,
+            "t2_image_url": t2_thumb_url,
         }
     else:
         print(f"INFO: No significant change detected (Area: {change_area_sq_meters} sq meters).")

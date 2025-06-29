@@ -8,6 +8,7 @@ from pymongo import MongoClient
 sync_client = MongoClient(MONGODB_URL)
 sync_database = sync_client[DATABASE_NAME]
 sync_aois_collection = sync_database.aois
+sync_users_collection = sync_database.users
 
 client = AsyncIOMotorClient(MONGODB_URL)
 database = client[DATABASE_NAME]
