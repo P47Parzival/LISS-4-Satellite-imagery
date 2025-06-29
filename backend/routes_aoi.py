@@ -5,6 +5,8 @@ from utils import serialize_doc
 from datetime import datetime
 from bson import ObjectId
 from routes_auth import get_current_user
+from database import sync_changes_collection
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/aois")
 
@@ -79,3 +81,23 @@ async def delete_aoi(aoi_id: str, current_user: dict = Depends(get_current_user)
         return {"message": "AOI deleted successfully"}
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid AOI ID")
+    
+@router.get("/{aoi_id}/changes")
+async def get_aoi_alerts(aoi_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        print("Querying for aoi_id:", aoi_id, "user_id:", str(current_user["_id"]))
+        sample = sync_changes_collection.find_one()
+        print("Sample change doc:", sample)
+        alerts = list(sync_changes_collection.find({
+            "aoi_id": aoi_id,
+            # "user_id": str(current_user["_id"])
+        }).sort("detection_date", -1))
+        print("Found alerts:", alerts)
+        # Ensure all ObjectIds are strings
+        for alert in alerts:
+            if "_id" in alert:
+                alert["_id"] = str(alert["_id"])
+        return alerts  # Let FastAPI handle JSON serialization
+    except Exception as e:
+        print("Error in get_aoi_alerts:", e)
+        return []  # Always return an empty list on error

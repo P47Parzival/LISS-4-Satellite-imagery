@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, MapPin, Calendar, Settings, Trash2, Eye, Search } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import AOIAlertsModal from '../components/AOIAlertsModal';
 
 interface AOI {
   _id: string;
@@ -21,6 +22,7 @@ export default function AOIList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedAoiId, setSelectedAoiId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAOIs();
@@ -75,7 +77,7 @@ export default function AOIList() {
 
   const filteredAOIs = aois.filter(aoi => {
     const matchesSearch = aoi.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         aoi.changeType.toLowerCase().includes(searchTerm.toLowerCase());
+      aoi.changeType.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || aoi.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -159,11 +161,11 @@ export default function AOIList() {
                         {aoi.status}
                       </span>
                     </div>
-                    
+
                     {aoi.description && (
                       <p className="text-gray-600 mb-4">{aoi.description}</p>
                     )}
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="flex items-center text-gray-600">
                         <MapPin className="h-4 w-4 mr-2 text-gray-400" />
@@ -178,7 +180,7 @@ export default function AOIList() {
                         <span>{aoi.confidenceThreshold}% confidence</span>
                       </div>
                     </div>
-                    
+
                     <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                       <span>Created: {formatDate(aoi.createdAt)}</span>
                       <span>
@@ -186,15 +188,18 @@ export default function AOIList() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2 ml-6">
-                    <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <button
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      onClick={() => setSelectedAoiId(aoi._id)}
+                    >
                       <Eye className="h-5 w-5" />
                     </button>
                     <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
                       <Settings className="h-5 w-5" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => deleteAOI(aoi._id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
@@ -213,7 +218,7 @@ export default function AOIList() {
             {searchTerm || filterStatus !== 'all' ? 'No AOIs match your criteria' : 'No AOIs created yet'}
           </h3>
           <p className="text-gray-500 mb-8">
-            {searchTerm || filterStatus !== 'all' 
+            {searchTerm || filterStatus !== 'all'
               ? 'Try adjusting your search or filter criteria'
               : 'Create your first Area of Interest to start monitoring satellite data'
             }
@@ -226,6 +231,10 @@ export default function AOIList() {
             Create your first AOI
           </Link>
         </div>
+      )}
+      {/* Alerts Modal */}
+      {selectedAoiId && (
+        <AOIAlertsModal aoiId={selectedAoiId} onClose={() => setSelectedAoiId(null)} />
       )}
     </div>
   );
