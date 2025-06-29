@@ -22,7 +22,7 @@ celery_app = Celery(
 celery_app.conf.beat_schedule = {
     'check-all-aois-daily': {
         'task': 'tasks_gee.schedule_all_aoi_checks', # Points to the task function
-        'schedule': crontab(hour=1, minute=30),  # Run every day at 1:30 AM
+        'schedule': crontab("*"),  # Run every day at 1:30 AM
         # Use crontab(minute='*/30') for every 30 mins for testing
     },
 }

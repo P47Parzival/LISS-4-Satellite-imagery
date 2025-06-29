@@ -2,9 +2,9 @@
 
 import ee
 from celery_config import celery_app
-from database import aois_collection # Assuming you have aoi_collection in database.py
+from database import aois_collection
 from bson import ObjectId
-from utils import serialize_doc # Assuming you have a function to serialize MongoDB docs
+from utils import serialize_doc 
 from database import sync_aois_collection
 
 # Initialize GEE (it's safe to do this at the module level for a worker)
@@ -71,16 +71,63 @@ def schedule_all_aoi_checks():
 
 # This is the actual GEE logic (slightly modified from before to return results)
 def get_change_for_aoi(aoi_document: dict):
-    # ... [The entire 'get_change_for_aoi' function from the previous response] ...
-    # ... from 'aoi_geometry = ee.Geometry(geojson_aoi)' onwards ...
-    change_area_sq_meters = 0  # Replace with your actual calculation
+    import ee
 
-    # At the end, instead of just printing, return a dictionary
+    # 1. Extract geometry
+    aoi_geometry = ee.Geometry(aoi_document["geojson"]["geometry"])
+
+    # 2. Define time ranges (example)
+    t1_range = ('2019-01-08', '2023-03-14')
+    t2_range = ('2024-11-01', '2025-04-30')
+
+    # 3. Cloud masking function for Sentinel-2
+    def mask_s2_clouds(image):
+        qa = image.select('QA60')
+        cloudBitMask = 1 << 10
+        cirrusBitMask = 1 << 11
+        mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(
+            qa.bitwiseAnd(cirrusBitMask).eq(0)
+        )
+        return image.updateMask(mask).divide(10000)
+
+    # 4. Get image collections
+    image_collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED').filterBounds(aoi_geometry)
+    t1_collection = image_collection.filterDate(*t1_range)
+    t2_collection = image_collection.filterDate(*t2_range)
+
+    print(f"DEBUG: Found {t1_collection.size().getInfo()} images for T1.")
+    print(f"DEBUG: Found {t2_collection.size().getInfo()} images for T2.")
+
+    # 5. Median composite and NDVI calculation
+    image_t1 = t1_collection.map(mask_s2_clouds).median().clip(aoi_geometry)
+    image_t2 = t2_collection.map(mask_s2_clouds).median().clip(aoi_geometry)
+
+    ndvi_t1 = image_t1.normalizedDifference(['B8', 'B4']).rename('NDVI')
+    ndvi_t2 = image_t2.normalizedDifference(['B8', 'B4']).rename('NDVI')
+
+    # 6. Change detection
+    ndvi_delta = ndvi_t2.subtract(ndvi_t1)
+    significant_change_map = ndvi_delta.lt(-0.25)  # Threshold for loss
+    final_change = significant_change_map.updateMask(significant_change_map)
+
+    # 7. Area calculation
+    area_of_change = final_change.multiply(ee.Image.pixelArea()).reduceRegion(
+        reducer=ee.Reducer.sum(),
+        geometry=aoi_geometry,
+        scale=10,
+        maxPixels=1e9
+    )
+
+    print("DEBUG: Requesting change area from GEE...")
+    change_area_sq_meters = area_of_change.getInfo().get('NDVI', 0)
+    print(f"DEBUG: Raw change area calculated by GEE: {change_area_sq_meters} sq meters.")
+
     if change_area_sq_meters and change_area_sq_meters > 500:
+        print(f"SUCCESS: Significant change of {change_area_sq_meters} sq meters detected.")
         return {
             "significant_change_detected": True,
-            "area_sq_meters": change_area_sq_meters,
-            # "t1_thumb_url": rgb_t1.getThumbURL(...)
+            "area_sq_meters": change_area_sq_meters
         }
     else:
+        print(f"INFO: No significant change detected (Area: {change_area_sq_meters} sq meters).")
         return {"significant_change_detected": False}
