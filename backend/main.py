@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes_auth import router as auth_router
 from routes_aoi import router as aoi_router
 
+import ee 
+ee.Initialize(project = 'bah-2025')  # Initialize Earth Engine
+
 app = FastAPI(title="Satellite Monitoring API", version="1.0.0")
 
 app.add_middleware(

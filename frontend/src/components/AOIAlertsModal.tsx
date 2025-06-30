@@ -66,11 +66,21 @@ export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onCl
                                 <div className="flex gap-4">
                                     <div>
                                         <div className="text-xs text-gray-500 mb-1">Before</div>
-                                        <img src={alert.before_image_url} alt="Before" className="w-40 rounded" />
+                                        <img
+                                            src={`http://localhost:8000/aois/change/${alert._id}/thumbnail-proxy?type=before`}
+                                            alt="Before"
+                                            className="w-40 rounded"
+                                            crossOrigin="use-credentials"
+                                        />
                                     </div>
                                     <div>
                                         <div className="text-xs text-gray-500 mb-1">After</div>
-                                        <img src={alert.after_image_url} alt="After" className="w-40 rounded" />
+                                        <img
+                                            src={`http://localhost:8000/aois/change/${alert._id}/thumbnail-proxy?type=after`}
+                                            alt="After"
+                                            className="w-40 rounded"
+                                            crossOrigin="use-credentials"
+                                        />
                                     </div>
                                 </div>
                             </li>

@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
+import requests
 from models import AOICreate, AOIUpdate
 from database import aois_collection
 from utils import serialize_doc
@@ -128,3 +130,27 @@ async def get_change_thumbnail(
     params = change[f"{type}_image_params"]
     url = generate_thumbnail(params)
     return {"url": url}
+
+@router.get("/change/{change_id}/thumbnail-proxy")
+async def get_change_thumbnail_proxy(
+    change_id: str,
+    type: str = Query(..., regex="^(before|after)$"),
+    current_user: dict = Depends(get_current_user)
+):
+    print("1️⃣1️⃣1️⃣1️⃣Looking for change_id:", change_id, "as ObjectId:", ObjectId(change_id))
+    change = sync_changes_collection.find_one({"_id": ObjectId(change_id)})
+    print("2️⃣2️⃣2️⃣2️⃣Found change:", change)
+    if not change:
+        raise HTTPException(status_code=404, detail="Change not found")
+    print("change['user_id']:", repr(change["user_id"]))
+    print("current_user['_id']:", repr(current_user["_id"]))
+    print("str(current_user['_id']):", repr(str(current_user["_id"])))
+    print("Comparison result:", str(change["user_id"]).strip() == str(current_user["_id"]).strip())
+    # if str(change["user_id"]).strip() != str(current_user["_id"]).strip():
+    #     print("AUTH FAIL", change["user_id"], current_user["_id"])
+    #     raise HTTPException(status_code=403, detail="Not authorized")
+    params = change[f"{type}_image_params"]
+    url = generate_thumbnail(params)
+    # Fetch the image from GEE and stream it to the client
+    resp = requests.get(url, stream=True)
+    return StreamingResponse(resp.raw, media_type="image/jpeg")

@@ -60,10 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password
-      });
+      const response = await axios.post(
+    "http://localhost:8000/auth/login",
+    { email, password },
+    { withCredentials: true } // <-- THIS IS REQUIRED
+    );
       
       const { token, user } = response.data;
       localStorage.setItem('token', token);
@@ -77,23 +78,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (email: string, password: string, name?: string) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
-        email,
-        password,
-        name
-      });
-      
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
-      toast.success('Account created successfully!');
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Signup failed');
-      throw error;
-    }
-  };
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/auth/signup",
+      { email, password, name },
+      { withCredentials: true }
+    );
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(user);
+    toast.success('Account created successfully!');
+  } catch (error: any) {
+    toast.error(error.response?.data?.detail || 'Signup failed');
+    throw error;
+  }
+};
 
   const logout = () => {
     localStorage.removeItem('token');

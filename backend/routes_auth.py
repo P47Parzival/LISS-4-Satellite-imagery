@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import JSONResponse
 from models import UserCreate, UserLogin
 from database import users_collection
 from utils import serialize_doc
@@ -27,9 +28,21 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))
+):
+    token = None
+    # 1. Try Authorization header
+    if credentials:
+        token = credentials.credentials
+    # 2. Try cookie
+    elif "access_token" in request.cookies:
+        token = request.cookies["access_token"]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
@@ -61,7 +74,15 @@ async def signup(user_data: UserCreate):
         "email": user_data.email,
         "name": user_data.name
     }
-    return {"token": access_token, "user": user_response}
+    response = JSONResponse({"token": access_token, "user": user_response})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",  # or "none" if using HTTPS and cross-site
+        secure=False     # True if using HTTPS
+    )
+    return response
 
 @router.post("/login")
 async def login(user_data: UserLogin):
@@ -75,7 +96,15 @@ async def login(user_data: UserLogin):
         "email": user["email"],
         "name": user.get("name")
     }
-    return {"token": access_token, "user": user_response}
+    response = JSONResponse({"token": access_token, "user": user_response})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",  # or "none" if using HTTPS and cross-site
+        secure=False     # Set to True in production with HTTPS
+    )
+    return response
 
 @router.get("/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
