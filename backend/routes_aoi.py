@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from models import AOICreate, AOIUpdate
 from database import aois_collection
 from utils import serialize_doc
@@ -7,6 +7,7 @@ from bson import ObjectId
 from routes_auth import get_current_user
 from database import sync_changes_collection
 from fastapi.responses import JSONResponse
+import ee
 
 router = APIRouter(prefix="/aois")
 
@@ -101,3 +102,29 @@ async def get_aoi_alerts(aoi_id: str, current_user: dict = Depends(get_current_u
     except Exception as e:
         print("Error in get_aoi_alerts:", e)
         return []  # Always return an empty list on error
+    
+# Retrieving thumbnail params
+
+def generate_thumbnail(params):
+    geometry = ee.Geometry(params["geometry"])
+    collection = ee.ImageCollection(params["collection"]).filterBounds(geometry).filterDate(*params["date_range"])
+    image = collection.median().clip(geometry)
+    vis_params = params["vis_params"]
+    thumb_params = params["thumb_params"]
+    url = image.visualize(**vis_params).getThumbURL(thumb_params)
+    return url
+
+@router.get("/{change_id}/thumbnail")
+async def get_change_thumbnail(
+    change_id: str,
+    type: str = Query(..., regex="^(before|after)$"),
+    current_user: dict = Depends(get_current_user)
+):
+    change = sync_changes_collection.find_one({"_id": ObjectId(change_id)})
+    if not change:
+        raise HTTPException(status_code=404, detail="Change not found")
+    if change["user_id"] != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized")
+    params = change[f"{type}_image_params"]
+    url = generate_thumbnail(params)
+    return {"url": url}

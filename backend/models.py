@@ -37,6 +37,6 @@ class ChangeRecord(BaseModel):
     user_id: str
     detection_date: datetime
     area_of_change: float
-    before_image_url: str
-    after_image_url: str
+    before_image_params: str
+    after_image_params: str
     status: str = "unread"

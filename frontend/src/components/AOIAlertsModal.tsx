@@ -1,4 +1,3 @@
-// AOIAlertsModal.tsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -16,14 +15,31 @@ export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onCl
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get(`http://localhost:8000/aois/${aoiId}/changes`)
-            .then(res => setAlerts(res.data))
-            .catch(err => {
-                if (err.response && err.response.status === 404) {
-                    setAlerts([]);
-                }
-            })
-            .finally(() => setLoading(false));
+        async function fetchAlertsAndThumbnails() {
+            setLoading(true);
+            try {
+                // 1. Fetch alerts
+                const res = await axios.get(`/aois/${aoiId}/changes`);
+                const alertsData = res.data;
+
+                // 2. Fetch thumbnails for each alert
+                const alertThumbnails = await Promise.all(alertsData.map(async (alert: any) => {
+                    const beforeRes = await axios.get(`/aois/${alert._id}/thumbnail?type=before`);
+                    const afterRes = await axios.get(`/aois/${alert._id}/thumbnail?type=after`);
+                    return {
+                        ...alert,
+                        before_image_url: beforeRes.data.url,
+                        after_image_url: afterRes.data.url,
+                    };
+                }));
+                setAlerts(alertThumbnails);
+            } catch (err) {
+                setAlerts([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchAlertsAndThumbnails();
     }, [aoiId]);
 
     return (

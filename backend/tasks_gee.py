@@ -45,25 +45,39 @@ def process_aoi_for_changes(aoi_id: str):
         from notifications import send_change_alert_email
         from database import users_collection
         user = sync_users_collection.find_one({"_id": aoi_document['userId']})
-        if user:
-            send_change_alert_email(
-                user_email=user['email'], 
-                aoi_name=aoi_document['name'], 
-                change_details=results
-            )
-        else:
-            print(f"ERROR: Could not find user with ID {aoi_document['userId']} to send alert.")
         # Save to changes collection
         change_doc = {
             "aoi_id": str(aoi_document["_id"]),
             "user_id": str(aoi_document["userId"]),
             "detection_date": datetime.utcnow(),
             "area_of_change": results["area_sq_meters"],
-            "before_image_url": results["t1_image_url"],
-            "after_image_url": results["t2_image_url"],
+            "before_image_params": {
+                "collection": "COPERNICUS/S2_SR_HARMONIZED",
+                "date_range": ["2019-01-08", "2023-03-14"],
+                "geometry": aoi_document["geojson"]["geometry"],
+                "bands": ["B4", "B3", "B2"],
+                "vis_params": {"bands": ["B4", "B3", "B2"], "min": 0.0, "max": 0.3},
+                "thumb_params": {"dimensions": "512x512", "format": "jpg"}
+            },  # Store what you need to generate the image
+            "after_image_params": {
+                "collection": "COPERNICUS/S2_SR_HARMONIZED",
+                "date_range": ["2024-11-01", "2025-04-30"],
+                "geometry": aoi_document["geojson"]["geometry"],
+                "bands": ["B4", "B3", "B2"],
+                "vis_params": {"bands": ["B4", "B3", "B2"], "min": 0.0, "max": 0.3},
+                "thumb_params": {"dimensions": "512x512", "format": "jpg"}
+            },
+            # "before_image_url": results["t1_image_url"],
+            # "after_image_url": results["t2_image_url"],
             "status": "unread"
         }
         sync_changes_collection.insert_one(change_doc)
+
+        send_change_alert_email(
+            user_email=user['email'],
+            aoi_name=aoi_document['name'],
+            change_details=change_doc
+        )
 
     else:
         print(f"No significant change found for AOI: {aoi_document['name']}.")
