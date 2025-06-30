@@ -15,11 +15,13 @@ export default function AOIAlertsModal({ aoiId, onClose }: { aoiId: string, onCl
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        console.log("AOIAlertsModal opened for aoiId:", aoiId);
         async function fetchAlertsAndThumbnails() {
             setLoading(true);
             try {
                 // 1. Fetch alerts
-                const res = await axios.get(`/aois/${aoiId}/changes`);
+                const res = await axios.get(`http://localhost:8000/aois/${aoiId}/changes?nocache=${Date.now()}`);
+                console.log("API response for alerts:", res.data); // debudding line
                 const alertsData = res.data;
 
                 // 2. Fetch thumbnails for each alert
