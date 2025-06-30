@@ -4,6 +4,33 @@
 
 Project Bolt is a comprehensive full-stack web application that leverages Google Earth Engine to monitor and visualize satellite-detected changes over user-defined Areas of Interest (AOIs). Built for researchers, environmental scientists, and organizations who need to track land use changes, deforestation, urban development, and other environmental transformations.
 
+## 📊 Process Flow Diagram
+
+![Process Flow](https://github.com/P47Parzival/LISS-4-Satellite-imagery/blob/main/Images/image1.png?raw=true)
+
+---
+
+## 😄 Model Analysis
+
+![Analysis](https://github.com/P47Parzival/LISS-4-Satellite-imagery/blob/main/Images/image2.png?raw=true)
+
+---
+
+## 🖼️ Before & After: Change Detection Example
+
+<table>
+  <tr>
+    <td align="center"><b>Before</b></td>
+    <td align="center"><b>After</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/P47Parzival/LISS-4-Satellite-imagery/blob/main/Images/image_before.png?raw=true" width="250"/></td>
+    <td><img src="https://github.com/P47Parzival/LISS-4-Satellite-imagery/blob/main/Images/image_after.png?raw=true" width="250"/></td>
+  </tr>
+  <h3>Reason: Urbanization<h3>
+</table>
+
+
 ## ✨ Key Features
 
 ### 🔐 **Secure User Management**
