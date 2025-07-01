@@ -111,9 +111,10 @@ def generate_thumbnail(params):
     geometry = ee.Geometry(params["geometry"])
     collection = ee.ImageCollection(params["collection"]).filterBounds(geometry).filterDate(*params["date_range"])
     image = collection.median().clip(geometry)
-    vis_params = params["vis_params"]
+    vis_params = {'bands': ['B4', 'B3', 'B2'], 'min': 0, 'max': 0.3}
     thumb_params = params["thumb_params"]
     url = image.visualize(**vis_params).getThumbURL(thumb_params)
+    print("Generated thumbnail URL:", url)
     return url
 
 @router.get("/{change_id}/thumbnail")
@@ -135,17 +136,18 @@ async def get_change_thumbnail(
 async def get_change_thumbnail_proxy(
     change_id: str,
     type: str = Query(..., regex="^(before|after)$"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)  # REMOVE THIS LINE
 ):
     print("1️⃣1️⃣1️⃣1️⃣Looking for change_id:", change_id, "as ObjectId:", ObjectId(change_id))
     change = sync_changes_collection.find_one({"_id": ObjectId(change_id)})
     print("2️⃣2️⃣2️⃣2️⃣Found change:", change)
     if not change:
         raise HTTPException(status_code=404, detail="Change not found")
-    print("change['user_id']:", repr(change["user_id"]))
-    print("current_user['_id']:", repr(current_user["_id"]))
-    print("str(current_user['_id']):", repr(str(current_user["_id"])))
-    print("Comparison result:", str(change["user_id"]).strip() == str(current_user["_id"]).strip())
+    # REMOVE AUTH CHECKS BELOW
+    # print("change['user_id']:", repr(change["user_id"]))
+    # print("current_user['_id']:", repr(current_user["_id"]))
+    # print("str(current_user['_id']):", repr(str(current_user["_id"])))
+    # print("Comparison result:", str(change["user_id"]).strip() == str(current_user["_id"]).strip())
     # if str(change["user_id"]).strip() != str(current_user["_id"]).strip():
     #     print("AUTH FAIL", change["user_id"], current_user["_id"])
     #     raise HTTPException(status_code=403, detail="Not authorized")

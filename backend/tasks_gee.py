@@ -117,8 +117,8 @@ def get_change_for_aoi(aoi_document: dict):
     aoi_geometry = ee.Geometry(aoi_document["geojson"]["geometry"])
 
     # 2. Define time ranges (example)
-    t1_range = ('2019-01-08', '2023-03-14')
-    t2_range = ('2024-11-01', '2025-04-30')
+    t1_range = ('2023-01-01', '2023-03-31')
+    t2_range = ('2024-11-01', '2025-01-31')
 
     # 3. Cloud masking function for Sentinel-2
     def mask_s2_clouds(image):
@@ -128,12 +128,12 @@ def get_change_for_aoi(aoi_document: dict):
         mask = qa.bitwiseAnd(cloudBitMask).eq(0).And(
             qa.bitwiseAnd(cirrusBitMask).eq(0)
         )
-        return image.updateMask(mask).divide(10000)
+        return image.updateMask(mask)   #temporary nto dividing by 10000
 
     # 4. Get image collections
-    image_collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED').filterBounds(aoi_geometry)
-    t1_collection = image_collection.filterDate(*t1_range)
-    t2_collection = image_collection.filterDate(*t2_range)
+    image_collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED').filterBounds(aoi_geometry) 
+    t1_collection = image_collection.filterDate(*t1_range).limit(10)
+    t2_collection = image_collection.filterDate(*t2_range).limit(10)
 
     print(f"DEBUG: Found {t1_collection.size().getInfo()} images for T1.")
     print(f"DEBUG: Found {t2_collection.size().getInfo()} images for T2.")
@@ -146,7 +146,7 @@ def get_change_for_aoi(aoi_document: dict):
     ndvi_t2 = image_t2.normalizedDifference(['B8', 'B4']).rename('NDVI')
 
     # --- Add thumbnail URL generation here ---
-    vis_params = {'bands': ['B4', 'B3', 'B2'], 'min': 0.0, 'max': 0.3}
+    vis_params = {'bands': ['B4', 'B3', 'B2'], 'min': 0.0, 'max': 3000}  #temporary not dividing by 10000
     t1_thumb_url = image_t1.visualize(**vis_params).getThumbURL({'dimensions': '512x512', 'format': 'jpg'})
     t2_thumb_url = image_t2.visualize(**vis_params).getThumbURL({'dimensions': '512x512', 'format': 'jpg'})
 
