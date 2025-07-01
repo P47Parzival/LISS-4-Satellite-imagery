@@ -7,4 +7,5 @@
 LISS4_T1/
 LISS4_T2/
 LISS-4-Satellite-imagery/output/
-Model/changes.geojson
+changes.geojson
+Model/aoi.geojson
