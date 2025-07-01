@@ -105,20 +105,20 @@ export default function AOIList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My AOIs</h1>
-          <p className="text-gray-600 mt-1">Manage your Areas of Interest</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My AOIs</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your Areas of Interest</p>
         </div>
         <Link
           to="/create-aoi"
-          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+          className="btn btn-primary flex items-center gap-2 shadow-lg"
         >
-          <Plus className="inline-block w-5 h-5 mr-2" />
+          <Plus className="inline-block w-5 h-5" />
           New AOI
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="card bg-white dark:bg-[var(--color-card-dark)]">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -128,7 +128,7 @@ export default function AOIList() {
                 placeholder="Search AOIs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function AOIList() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -151,88 +151,55 @@ export default function AOIList() {
       {filteredAOIs.length > 0 ? (
         <div className="grid gap-6">
           {filteredAOIs.map((aoi) => (
-            <div key={aoi._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-              <div className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <h3 className="text-xl font-semibold text-gray-900">{aoi.name}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(aoi.status)}`}>
-                        {aoi.status}
-                      </span>
+            <div key={aoi._id} className="card bg-white dark:bg-[var(--color-card-dark)] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{aoi.name}</h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(aoi.status)}`}>{aoi.status}</span>
+                  </div>
+                  {aoi.description && (
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">{aoi.description}</p>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                      <span className="capitalize">{aoi.changeType.replace(/([A-Z])/g, ' $1')}</span>
                     </div>
-
-                    {aoi.description && (
-                      <p className="text-gray-600 mb-4">{aoi.description}</p>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                        <span className="capitalize">{aoi.changeType.replace(/([A-Z])/g, ' $1')}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                        <span className="capitalize">{aoi.monitoringFrequency}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Settings className="h-4 w-4 mr-2 text-gray-400" />
-                        <span>{aoi.confidenceThreshold}% confidence</span>
-                      </div>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                      <span className="capitalize">{aoi.monitoringFrequency}</span>
                     </div>
-
-                    <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-                      <span>Created: {formatDate(aoi.createdAt)}</span>
-                      <span>
-                        Last monitored: {aoi.lastMonitored ? formatDate(aoi.lastMonitored) : 'Never'}
-                      </span>
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <Settings className="h-4 w-4 mr-2 text-gray-400" />
+                      <span>{aoi.confidenceThreshold}% confidence</span>
                     </div>
                   </div>
-
-                  <div className="flex items-center space-x-2 ml-6">
-                    <button
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      onClick={() => setSelectedAoiId(aoi._id)}
-                    >
-                      <Eye className="h-5 w-5" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
-                      <Settings className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => deleteAOI(aoi._id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
+                  <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                    <span>Created: {formatDate(aoi.createdAt)}</span>
+                    <span>
+                      Last monitored: {aoi.lastMonitored ? formatDate(aoi.lastMonitored) : 'Never'}
+                    </span>
                   </div>
+                </div>
+                <div className="flex items-center space-x-2 ml-6">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setSelectedAoiId(aoi._id)}
+                  >
+                    <Eye className="h-5 w-5" />
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => deleteAOI(aoi._id)}>
+                    <Trash2 className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-          <MapPin className="mx-auto h-16 w-16 text-gray-400 mb-6" />
-          <h3 className="text-xl font-medium text-gray-900 mb-2">
-            {searchTerm || filterStatus !== 'all' ? 'No AOIs match your criteria' : 'No AOIs created yet'}
-          </h3>
-          <p className="text-gray-500 mb-8">
-            {searchTerm || filterStatus !== 'all'
-              ? 'Try adjusting your search or filter criteria'
-              : 'Create your first Area of Interest to start monitoring satellite data'
-            }
-          </p>
-          <Link
-            to="/create-aoi"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Create your first AOI
-          </Link>
-        </div>
+        <div className="text-gray-500 dark:text-gray-400 py-8 text-center">No AOIs found.</div>
       )}
-      {/* Alerts Modal */}
       {selectedAoiId && (
         <AOIAlertsModal aoiId={selectedAoiId} onClose={() => setSelectedAoiId(null)} />
       )}

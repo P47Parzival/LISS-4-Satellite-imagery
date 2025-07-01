@@ -111,7 +111,7 @@ def generate_thumbnail(params):
     geometry = ee.Geometry(params["geometry"])
     collection = ee.ImageCollection(params["collection"]).filterBounds(geometry).filterDate(*params["date_range"])
     image = collection.median().clip(geometry)
-    vis_params = {'bands': ['B4', 'B3', 'B2'], 'min': 0, 'max': 0.3}
+    vis_params = {'bands': ['B4', 'B3', 'B2'], 'min': 0, 'max': 3000}
     thumb_params = params["thumb_params"]
     url = image.visualize(**vis_params).getThumbURL(thumb_params)
     print("Generated thumbnail URL:", url)

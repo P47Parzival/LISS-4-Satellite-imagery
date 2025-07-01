@@ -15,10 +15,10 @@ from celery_singleton import Singleton
 
 # Initialize GEE (it's safe to do this at the module level for a worker)
 try:
-    ee.Initialize(project='bah-2025') 
+    ee.Initialize(project='isro-bah-2025') 
 except Exception:
     ee.Authenticate()
-    ee.Initialize(project='bah-2025')
+    ee.Initialize(project='isrobah-2025')
 
 # --- The Main GEE Processing Task ---
 # The @celery_app.task decorator registers this function as a background task.
@@ -117,8 +117,8 @@ def get_change_for_aoi(aoi_document: dict):
     aoi_geometry = ee.Geometry(aoi_document["geojson"]["geometry"])
 
     # 2. Define time ranges (example)
-    t1_range = ('2023-01-01', '2023-03-31')
-    t2_range = ('2024-11-01', '2025-01-31')
+    t1_range = ('2019-01-08', '2023-03-14')
+    t2_range = ('2024-11-01', '2025-04-30')
 
     # 3. Cloud masking function for Sentinel-2
     def mask_s2_clouds(image):
@@ -132,8 +132,8 @@ def get_change_for_aoi(aoi_document: dict):
 
     # 4. Get image collections
     image_collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED').filterBounds(aoi_geometry) 
-    t1_collection = image_collection.filterDate(*t1_range).limit(10)
-    t2_collection = image_collection.filterDate(*t2_range).limit(10)
+    t1_collection = image_collection.filterDate(*t1_range)
+    t2_collection = image_collection.filterDate(*t2_range)
 
     print(f"DEBUG: Found {t1_collection.size().getInfo()} images for T1.")
     print(f"DEBUG: Found {t2_collection.size().getInfo()} images for T2.")

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>AOI Polygon</name>
+    <description>Construction Monitoring AOI</description>
+    <Placemark>
+      <name>Test AOI</name>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              72.376902,23.266174
+              72.783087,23.299001
+              72.700752,23.013393
+              72.429047,22.790552
+              72.22321,23.160064
+              72.376902,23.266174
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>

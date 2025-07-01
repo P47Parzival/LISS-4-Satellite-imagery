@@ -92,132 +92,85 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-2xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Welcome back, {user?.name || user?.email?.split('@')[0]}!
-            </h1>
-            <p className="text-blue-100 text-lg">
-              Monitor your areas of interest with real-time satellite data
-            </p>
-          </div>
-          <Link
-            to="/create-aoi"
-            className="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
-          >
-            <Plus className="inline-block w-5 h-5 mr-2" />
-            Create AOI
-          </Link>
+      <div className="card bg-gradient-to-r from-blue-900 to-gray-900 dark:from-blue-900 dark:to-gray-950 text-white mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">
+            Welcome back, {user?.name || user?.email?.split('@')[0]}!
+          </h1>
+          <p className="text-blue-200 text-lg">
+            Monitor your areas of interest with real-time satellite data
+          </p>
         </div>
+        <Link
+          to="/create-aoi"
+          className="btn btn-primary flex items-center gap-2 shadow-lg"
+        >
+          <Plus className="inline-block w-5 h-5" />
+          Create AOI
+        </Link>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-blue-100">
-              <MapPin className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total AOIs</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalAOIs}</p>
-            </div>
+        <div className="card flex items-center gap-4 bg-white dark:bg-[var(--color-card-dark)]">
+          <MapPin className="h-8 w-8 text-blue-500" />
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total AOIs</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalAOIs}</p>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-green-100">
-              <TrendingUp className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Monitoring</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.activeMonitoring}</p>
-            </div>
+        <div className="card flex items-center gap-4 bg-white dark:bg-[var(--color-card-dark)]">
+          <TrendingUp className="h-8 w-8 text-green-500" />
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Monitoring</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeMonitoring}</p>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-orange-100">
-              <AlertTriangle className="h-6 w-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Recent Alerts</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.recentAlerts}</p>
-            </div>
+        <div className="card flex items-center gap-4 bg-white dark:bg-[var(--color-card-dark)]">
+          <AlertTriangle className="h-8 w-8 text-orange-500" />
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Recent Alerts</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.recentAlerts}</p>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg bg-purple-100">
-              <Calendar className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Coverage Area</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.coverageArea}</p>
-            </div>
+        <div className="card flex items-center gap-4 bg-white dark:bg-[var(--color-card-dark)]">
+          <Calendar className="h-8 w-8 text-purple-500" />
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Coverage Area</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.coverageArea}</p>
           </div>
         </div>
       </div>
 
       {/* Recent AOIs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Recent AOIs</h2>
-            <Link
-              to="/aois"
-              className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-            >
-              View all
-            </Link>
-          </div>
+      <div className="card bg-white dark:bg-[var(--color-card-dark)]">
+        <div className="flex items-center justify-between mb-4 border-b border-gray-200 dark:border-gray-800 pb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent AOIs</h2>
+          <Link
+            to="/aois"
+            className="btn btn-secondary"
+          >
+            View all
+          </Link>
         </div>
-        
         {aois.length > 0 ? (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-gray-800">
             {aois.slice(0, 5).map((aoi) => (
-              <div key={aoi._id} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-medium text-gray-900">{aoi.name}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(aoi.status)}`}>
-                        {aoi.status}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center space-x-6 text-sm text-gray-500">
-                      <span>Type: {aoi.changeType}</span>
-                      <span>Frequency: {aoi.monitoringFrequency}</span>
-                      <span>Created: {formatDate(aoi.createdAt)}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Last monitored</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {aoi.lastMonitored ? formatDate(aoi.lastMonitored) : 'Never'}
-                    </p>
+              <div key={aoi._id} className="py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">{aoi.name}</h3>
+                  <div className="mt-1 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <span>Type: {aoi.changeType}</span>
+                    <span>Frequency: {aoi.monitoringFrequency}</span>
+                    <span>Created: {formatDate(aoi.createdAt)}</span>
                   </div>
                 </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(aoi.status)}`}>{aoi.status}</span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-12 text-center">
-            <MapPin className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No AOIs yet</h3>
-            <p className="mt-2 text-gray-500">Get started by creating your first Area of Interest</p>
-            <Link
-              to="/create-aoi"
-              className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Create your first AOI
-            </Link>
-          </div>
+          <div className="text-gray-500 dark:text-gray-400 py-8 text-center">No AOIs found.</div>
         )}
       </div>
     </div>

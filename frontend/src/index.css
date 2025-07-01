@@ -1,3 +1,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Enable dark mode via class */
+:root {
+  --color-bg-dark: #101624;
+  --color-bg-darker: #0a0f1a;
+  --color-bg-light: #f8fafc;
+  --color-primary: #2563eb;
+  --color-accent: #7c3aed;
+  --color-card-dark: #1a2236;
+  --color-card-light: #fff;
+  --color-text-dark: #e5e7eb;
+  --color-text-light: #1e293b;
+}
+
+html.dark {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+}
+
+body {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-light);
+  font-family: 'Inter', 'Roboto', 'Segoe UI', Arial, sans-serif;
+}
+
+html.dark body {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+}
+
+/* Card styles */
+.card {
+  @apply rounded-xl shadow p-6 bg-white dark:bg-[var(--color-card-dark)] dark:text-[var(--color-text-dark)];
+}
+
+/* Minimal button style */
+.btn {
+  @apply px-4 py-2 rounded-lg font-semibold transition-colors focus:outline-none;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700;
+}

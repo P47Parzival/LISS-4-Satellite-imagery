@@ -1,0 +1,9 @@
+*.tif
+*.jpg
+*.png
+*.aux.xml
+*.meta
+*.ipynb_checkpoints/
+LISS4_T1/
+LISS4_T2/
+LISS-4-Satellite-imagery/output/

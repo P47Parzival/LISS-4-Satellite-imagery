@@ -15,6 +15,10 @@ def send_change_alert_email(user_email: str, aoi_name: str, change_details: dict
         print("ERROR: SendGrid API Key not configured. Cannot send email.")
         return
 
+    for key in ["before_image_params", "after_image_params"]:
+        params = change_details[key]
+        params["vis_params"] = {"bands": ["B4", "B3", "B2"], "min": 0.0, "max": 3000}  #since data is not divided by 10000
+    
     # Generate fresh URLs using the params stored in change_details
     before_url = generate_thumbnail(change_details["before_image_params"])
     after_url = generate_thumbnail(change_details["after_image_params"])
