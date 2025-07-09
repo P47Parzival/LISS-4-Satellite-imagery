@@ -60,8 +60,6 @@ Project Bolt is a comprehensive full-stack web application that leverages Google
 - Real-time updates and notifications
 - Mobile-friendly interface
 
----
-
 ## 🛠️ Tech Stack
 
 | Component                     | Technology                                              |
